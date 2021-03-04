@@ -1,33 +1,8 @@
-const app = require("express")()
+const express = require("express")
+const router = express.Router() 
+const User = require("../../models/user")
 
-const uri = "mongodb+srv://userdb:1234@cluster0.8o1xo.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-const bodyParser = require("body-parser");
-const cors = require('cors')
-const morgan = require("morgan")
-const User = require("./models/user")
-
-const mongoose = require("mongoose");
-const Blog = require("./models/blog");
-
-
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors())
-app.use(morgan('tiny'));
-
-//our model
-
-
-mongoose.connect(uri,{ useNewUrlParser: true, useUnifiedTopology: true }).then(()=>{
-    console.log("connected")
-    app.listen(port,()=>{
-        console.log(`server is running on port ${port}`)
-    })
-}).catch((err)=>{
-    console.log("error while connecting to db..")
-})
-
-app.get("/users",(req,res)=>{
+router.get("/",(req,res)=>{
     // no body 
     User.find().then((result)=>{
         res.send(JSON.stringify(result))
@@ -35,8 +10,7 @@ app.get("/users",(req,res)=>{
         console.log(err)
     })
 })
-
-app.get("/users/:id",(req,res)=>{
+router.get("/:id",(req,res)=>{
     const user_id = req.params.id 
     User.findById(user_id).then((result)=>{
         res.send(JSON.stringify(result))
@@ -45,7 +19,7 @@ app.get("/users/:id",(req,res)=>{
     })
 })
 
-app.delete("/users/:id",(req,res)=>{
+router.delete("/:id",(req,res)=>{
     const user_id = req.params.id 
     User.findById(user_id).then((userToDelete)=>{
         userToDelete.delete()
@@ -56,7 +30,7 @@ app.delete("/users/:id",(req,res)=>{
   
 })
 
-app.put("/users/:id",(req,res)=>{
+router.put("/:id",(req,res)=>{
     
     User.findByIdAndUpdate(req.params.id, {
         username: req.body.username,
@@ -68,7 +42,7 @@ app.put("/users/:id",(req,res)=>{
     })
 })
 
-app.post("/users",(req,res)=>{
+router.post("/",(req,res)=>{
     // accept the data 
     //validation with joi
     //errors 
@@ -88,7 +62,8 @@ app.post("/users",(req,res)=>{
         res.send(JSON.stringify({error:"Error adding this to the db"}))
     })
 })
-app.get("/search",(req,res)=>{
+
+router.get("/search",(req,res)=>{
     const query = req.query.username
     User.find({username: query}).then((result)=>{
         res.send(JSON.stringify(result))    
@@ -96,13 +71,6 @@ app.get("/search",(req,res)=>{
         console.log(err)
     })
 })
-app.get("/blogs",(req,res)=>{
-    Blog.find().then((blogs)=>{
-        res.send(JSON.stringify(blogs))
-    }).catch((err)=>{
-        console.log(err)
-    })
-})
 
 
-const port = 4000 || process.env.PORT
+module.exports = router
